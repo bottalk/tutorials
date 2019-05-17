@@ -1,0 +1,21 @@
+---
+slots:
+
+  new_task_name: 'AMAZON.SearchQuery'
+  
+  task_order:
+    - first
+    - last
+    - second
+    - third
+    - fourth
+    - fifth
+    
+  source_list_name:
+    - TO DO
+    - DOING
+    - DONE
+  destination_list_name:
+    - TO DO
+    - DOING
+    - DONE

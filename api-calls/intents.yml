@@ -1,0 +1,12 @@
+---
+intents:
+  ok_great:
+    - 'OK'
+    - 'Great'
+  Create_Task:
+    - 'create a new task called {new_task_name}'
+    - 'create {new_task_name} as a new task'
+  Move_Task:
+    - 'move the {task_order} task from {source_list_name} to {destination_list_name}'
+  Delete_Task:
+    - 'delete the {task_order} task from {source_list_name}'

@@ -1,0 +1,118 @@
+---
+include:
+  - intents.yml
+  - slots.yml
+  - tests.yml
+scenario:
+  name: 'Task Manager'
+  locale: 'en-US'
+  category: EDUCATION_AND_REFERENCE
+  invocation: 'Task Manager'
+  examplePhrases:
+    - 'Alexa, open Task Manager'
+  steps:
+  
+    - name: Set Vars
+      actions:
+        - set: >
+            list_id = {
+              'to do': '5cb87630d107633274494541',
+              'doing': '5cb876346c19663346a58289',
+              'done': '5cb87636cd20710df9370d24'
+            }
+      next: Read Cards in TODO List
+ 
+  
+    - name: Read Cards in TODO List
+      actions:
+        - http.get:
+            url: 'https://api.trello.com/1/lists/5cb87630d107633274494541/cards?key=YOUR_KEY_HERE&token=YOUR_TOKEN_HERE'
+        - set: 'cards_in_list = http_response'
+        - sendText: >
+            Here is what you need to do today. 
+            {% for card in http_response %}
+              {{card.name}}. 
+            {% endfor %}
+        - sendText: >
+            To create a new task, say "Create a new task called" followed by a task name.
+            To move a card, say "Move the last task from TO DO to DOING".
+            To delete a card, say "Delete the last task from DONE".
+        - getInput:
+      next:
+        Create_Task: Create a New Task
+        Move_Task: Move Task
+        Delete_Task: Delete Task
+        
+    - name: Delete Task
+      actions:
+        # Get the cards in the list the user mentioned
+        - http.get:
+            url: 'https://api.trello.com/1/lists/{{ list_id[source_list_name] }}/cards?key=YOUR_KEY_HERE&token=YOUR_TOKEN_HERE'
+        - set: 'cards_in_list = http_response'
+        # Delete the last card from this list
+        - set: 'last_card = cards_in_list | last'
+        - http.delete:
+            url: 'https://api.trello.com/1/cards/{{ last_card.id }}'
+            headers: ["Content-Type: application/json"]
+            payload: >
+              {
+                "idList": "{{ list_id[source_list_name] }}",
+                "key": "YOUR_KEY_HERE",
+                "token": "YOUR_TOKEN_HERE"
+              }
+        - sendText: 'Deleted {{ last_card.name }} from {{ source_list_name }}'
+         
+        
+    - name: Move Task
+      actions:
+        - set: 'last_card = cards_in_list | last'
+        - sendText: >
+             Moving "{{ last_card.name }}" to "{{ destination_list_name }}".
+        - http.put:
+            url: 'https://api.trello.com/1/cards/{{ last_card.id }}'
+            headers: ["Content-Type: application/json"]
+            payload: >
+              {
+                "idList": "{{ list_id[destination_list_name] }}",
+                "key": "YOUR_KEY_HERE",
+                "token": "YOUR_TOKEN_HERE"
+              }
+        
+    - name: Create a New Task
+      actions:
+        - sendText: 'Creating a new task: {{new_task_name}}.'
+        - http.post:
+            url: 'https://api.trello.com/1/cards'
+            headers: ["Content-Type: application/json"]
+            payload: >
+              {
+                "name": "{{new_task_name}}",
+                "idList": "5cb87630d107633274494541",
+                "key": "YOUR_KEY_HERE",
+                "token": "YOUR_TOKEN_HERE"
+              }
+      next: Read Cards in TODO List
+        
+    
+  
+    - name: Initial step
+      actions:
+        - sendText: 'Welcome text'
+        - getInput:
+      next:
+        AMAZON.CancelIntent: Exit
+        AMAZON.StopIntent: Exit
+        AMAZON.HelpIntent: Help
+        
+    - name: Exit
+      entrypoint: true
+      actions: 
+        - sendText: 'Here is a bye-bye text' 
+        
+    - name: Help
+      entrypoint: true
+      actions:
+        - sendText: 'Here is the help text'
+        - getInput: 
+      next: 
+        ok_great: Initial step 
