@@ -41,10 +41,7 @@ This dialogue reprents a **happy path** - when the interaction between a voice a
 
 > **Assistant**: Deleted "Record YouTube Video" from "DONE"
 
-Do you want to take a listen? Just click on the **Run** button in front of *Happy Path*:
-
-<iframe scrolling="no" src="https://bottalk.de/preview_ihojz" style="height: 306px;" width="100%" height="500px" frameborder="0"></iframe>
 
 The cool thing is, the voice application we're build interacts with the Trello API. And you can see the results of your voice commands on your screen - in your Trello board.
 
-Let's get started!
+[Let's get started!](https://docs.bottalk.de/tutorials/api-calls-from-alexa-skill-and-google-action#requesting-trello-api-key-and-token)
