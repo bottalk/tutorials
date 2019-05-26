@@ -1,0 +1,11 @@
+---
+intents:
+  ok_great:
+    - 'OK'
+    - 'Great'
+  buy_isp_intent:
+    - 'buy {product_name}'
+    - 'i want {product_name}'
+  cancel_isp_intent:
+    - 'refund {product_name}'
+    - 'I want a refund for {product_name}'
