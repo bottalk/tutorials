@@ -1,5 +1,7 @@
 # Make an API Call from an Alexa Skill and Action on Google
 
+![Make API Calls from Alexa and Google Actions](https://docs.bottalk.de/assets/images/soical-bg-api-calls-from-alexa-and-google.png)
+
 No Alexa Skill or Action on Google lives in the vacuum. The more exciting voice application you have in mind, the more likely it is that you need to request some external data.
 
 Learn how to build a task management [voice application](https://docs.bottalk.de/#what-are-custom-alexa-skills-and-actions-on-google) that can call [Trello Rest API](https://developers.trello.com/reference) to read, create, update and delete cards with voice.
