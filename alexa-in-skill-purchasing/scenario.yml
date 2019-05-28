@@ -4,6 +4,8 @@ include:
   - slots.yml
   - tests.yml
 scenario:
+  dashbot:
+    alexa: '3bXHh6PAYrIqDTw05uN1ehGikvlP8VIbFpTU28aR'
   name: 'Apple Game'
   locale: 'en-US'
   category: EDUCATION_AND_REFERENCE
@@ -14,26 +16,20 @@ scenario:
   
     - name: Initial step
       actions:
-        - sendText: 'Here are the products we have in the skill: '
+        - sendText: >
+            Welcome to Apple Game! 
+            The world's largest virtual bio apple store! 
+            Here's what we have today to offer: 
         - isp.getProducts:
             input: true
         - sendText: >
             {% for product in isp_response.inSkillProducts %}
                 {{ product.name }}. 
             {% endfor %}
-        - sendText: 'What do you want to buy?'
-        #- set: 'first_product = isp_response.inSkillProducts | first'
-        #- isp.getProduct:
-        #    input: true
-        #    reference: '{{ isp_response.inSkillProducts[0].referenceName }}'  
-        #- sendText: 'About to buy a product {{ first_product.name }}'
-        #- isp.cancel:
-        #    output: true
-        #    productId: '{{ isp_response.inSkillProducts[0].productId }}'
-        #    productToken: 'apple_pie'
+        - sendText: 'What would you like to buy?'
         - getInput:
       next:
-        buy_isp_intent: Check If User Bought Product Already
+        buy_isp_intent: Buy Product Step
         cancel_isp_intent: Cancel Product Step
         ISP.OnUpsell: Upsell Success Check
         ISP.OnBuy: Buy Success Check
@@ -42,32 +38,60 @@ scenario:
         AMAZON.StopIntent: Exit
         AMAZON.HelpIntent: Help
         
-    - name: Check If User Bought Product Already
+    - name: Buy Product Step
+      entrypoint: true
       actions:
-        - sendText: 'So you want to buy {{ product_name }}.'
         - isp.getProduct:
             input: true
             reference: "{{ product_name | replace({' ': '_'}) | lower }}"
-        #- compareContext:
-        #    var: '{{ isp_response.entitled }}'
-        #    is_equal: "ENTITLED"
-      next: Buy Product
-        #'true': User Already Bought
-        #'false': Buy Product
-        
-    - name: User Already Bought
-      actions:
-        - sendText: 'You have already bought {{ isp_response.name }}!'
-      next: Initial step
-     
-    - name: Buy Product
-      actions:
         - isp.buy:
             output: true
             productId: '{{ isp_response.productId }}'
             productToken: '{{ product_name }}'
       
+    - name: Buy Success Check
+      when: 'purchaseResult != "ACCEPTED"'
+      entrypoint: true
+      actions:
+        - sendText: >
+            {% if purchaseResult == 'ACCEPTED' %}
+              The transaction was accepted.
+            {% elseif purchaseResult == 'DECLINED' %}
+              The transaction was declined.
+            {% elseif purchaseResult == 'ALREADY_PURCHASED' %}
+              You already purchased {{ product_name }}.
+            {% elseif purchaseResult == 'ERROR' %}
+              There was an error.
+            {% else %}
+              This should never happen actually.
+            {% endif %}
+      next:
+        else: Upsell Apple Pie
+        
+    - name: Upsell Apple Pie
+      actions:
+        - isp.getProduct:
+            input: true
+            reference: "apple_pie"
+        - isp.upsell:
+            input: true
+            output: true
+            message: 'Would you be interesed in Apple Pie?'
+            productId: '{{ isp_response.productId }}'
+            productToken: 'Apple Pie'
+      
+    - name: Upsell Success Check
+      entrypoint: true
+      actions:
+        - sendText: >
+            Is there anything else I can help you with?
+        - getInput:
+      next: 
+        buy_isp_intent: Buy Product Step
+        cancel_isp_intent: Cancel Product Step
+        
     - name: Cancel Product Step
+      entrypoint: true
       actions:
         - isp.getProduct:
             input: true
@@ -76,28 +100,18 @@ scenario:
             output: true
             productId: '{{ isp_response.productId }}'
             productToken: '{{ product_name }}'
-      
-    - name: Upsell Success Check
-      entrypoint: true
-      actions:
-        - sendText: 'Upsell Event came in.'
-        - sendText: 'Thre result is: {{ purchaseResult }}'
         
-    - name: Buy Success Check
-      entrypoint: true
-      actions:
-        - sendText: 'Buy Event came in.'
-        - sendText: 'The result is: {{ purchaseResult }}'
-        - sendText: 'The product id is : {{ productId }}'
-        - sendText: 'The message is : {{ message }}'
         
     - name: Cancel Success Check
       entrypoint: true
       actions:
-        - sendText: 'Cancel Event came in.'
-        - sendText: 'The result is: {{ purchaseResult }}'
-        - sendText: 'The product id is : {{ productId }}'
-        - sendText: 'The message is : {{ message }}'
+        - sendText: >
+            Is there anything else I can help you with?
+        - getInput:
+      next: 
+        AMAZON.NoIntent: Exit
+        buy_isp_intent: Buy Product Step
+        cancel_isp_intent: Cancel Product Step
         
     - name: Exit
       entrypoint: true

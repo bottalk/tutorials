@@ -1,9 +1,8 @@
 ---
 intents:
-  ok_great:
-    - 'OK'
-    - 'Great'
   buy_isp_intent:
+    - 'give me {product_name}'
+    - 'i want to buy {product_name}'
     - 'buy {product_name}'
     - 'i want {product_name}'
   cancel_isp_intent:
